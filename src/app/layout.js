@@ -19,6 +19,9 @@ export default function RootLayout({ children }) {
             <Link href="/" className="text-white hover:text-yellow-500">
               Home
             </Link>
+            <Link href="/Farmer" className="text-white hover:text-yellow-500">
+              Farmers
+            </Link>
             <Link href="/Admin" className="text-white hover:text-yellow-500">
               Admin
             </Link>
