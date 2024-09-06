@@ -20,7 +20,6 @@ export default function Weather() {
       setMessage("Error fetching weather data.");
     }
   };
-
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center">
       <div className="w-full max-w-md p-8 space-y-4 bg-zinc-900 rounded-lg shadow-lg">

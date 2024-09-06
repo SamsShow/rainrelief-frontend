@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useContract } from "../../hooks/useContract";
+import Link from 'next/link';
 
 export default function Home() {
   const { contract, isConnected } = useContract();
@@ -15,28 +16,6 @@ export default function Home() {
       setMessage("Incentive withdrawn successfully!");
     } catch (error) {
       setMessage(error.reason || "Error withdrawing incentive.");
-    }
-  };
-
-  const registerFarmer = async () => {
-    try {
-      const response = await fetch('/api/register-farmer', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ address: farmerAddress }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setMessage(data.message);
-      } else {
-        const errorData = await response.json();
-        setMessage(errorData.message || "Error submitting registration request.");
-      }
-    } catch (error) {
-      setMessage("Error submitting registration request.");
     }
   };
 
@@ -66,12 +45,12 @@ export default function Home() {
             />
           </div>
           <div className="flex flex-col space-y-4">
-            <button
-              onClick={registerFarmer}
-              className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:-translate-y-1"
-            >
-              Register as Farmer
-            </button>
+            <Link href="https://forms.gle/2G2CXULW4VC6EhjC8"
+                target="_blank"
+                className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:-translate-y-1 text-center"
+              >
+                Register as Farmer
+            </Link>
             <button
               onClick={withdrawIncentive}
               className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:-translate-y-1"

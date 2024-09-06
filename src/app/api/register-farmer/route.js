@@ -1,51 +1,69 @@
-import { NextResponse } from 'next/server';
 import { MongoClient } from 'mongodb';
+import dotenv from 'dotenv';
+import tls from 'tls';
 
-// Access the MongoDB URI from environment variables
-const uri = process.env.MONGODB_URI;
+dotenv.config();
 
-export async function POST(request) {
-  // Check if the MongoDB URI is defined before proceeding
-  if (typeof uri === 'undefined') {
-    return NextResponse.json(
-      {
-        message: 'Error registering farmer',
-        error: 'MongoDB URI is not defined',
-      },
-      { status: 500 }
-    );
+const mongodbUri = process.env.NEXT_MONGODB_URI;
+
+if (!mongodbUri) {
+  console.error('NEXT_MONGODB_URI is not defined in the environment variables');
+  process.exit(1);
+}
+
+let client;
+
+export async function connectToDatabase() {
+  if (client) {
+    return client.db();
   }
 
-  const client = new MongoClient(uri);
+  try {
+    client = await MongoClient.connect(mongodbUri, {
+      ssl: true,
+      sslValidate: true,
+      tlsAllowInvalidCertificates: true, // Use this option cautiously
+      tlsInsecure: true, // Use this option cautiously
+      useUnifiedTopology: false,
+      useNewUrlParser: false,
+      tlsCAFile: tls.rootCertificates[0], // Use the default root CA
+    });
+    console.log('Connected to MongoDB');
+    return client.db();
+  } catch (error) {
+    console.error('Error connecting to MongoDB:', error);
+    process.exit(1);
+  }
+}
+
+export async function registerFarmer(farmerData) {
+  const db = await connectToDatabase();
+  const collection = db.collection('farmers');
 
   try {
-    const { address } = await request.json();
-
-    if (!address) {
-      return NextResponse.json({ message: 'Farmer address is required' }, { status: 400 });
-    }
-
-    await client.connect();
-    const database = client.db('rainrelief');
-    const farmers = database.collection('farmers');
-
-    // Check if the farmer is already registered
-    const existingFarmer = await farmers.findOne({ address });
-    if (existingFarmer) {
-      return NextResponse.json({ message: 'Farmer is already registered' }, { status: 400 });
-    }
-
-    // Insert the new farmer
-    await farmers.insertOne({ address, registeredAt: new Date() });
-
-    return NextResponse.json({ message: 'Request sent successfully' }, { status: 200 });
+    const result = await collection.insertOne(farmerData);
+    console.log('Farmer registered successfully:', result.insertedId);
+    return result.insertedId;
   } catch (error) {
     console.error('Error registering farmer:', error);
-    return NextResponse.json({ message: 'Error registering farmer', error: error.message }, { status: 500 });
-  } finally {
-    // Ensure client is closed properly
-    if (client && client.close) {
-      await client.close();
-    }
+    throw error;
+  }
+}
+
+// Usage in API route
+export async function POST(request) {
+  try {
+    const farmerData = await request.json();
+    const farmerId = await registerFarmer(farmerData);
+    return new Response(JSON.stringify({ success: true, farmerId }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('Error registering farmer:', error);
+    return new Response(JSON.stringify({ success: false, error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }
