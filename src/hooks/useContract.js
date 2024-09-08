@@ -14,29 +14,40 @@ export function useContract() {
       try {
         if (window.ethereum) {
           const provider = new BrowserProvider(window.ethereum);
-          setProvider(provider);
-
+          const accounts = await provider.send("eth_requestAccounts", []);
           const signer = await provider.getSigner();
-          setSigner(signer);
+          const contractInstance = new Contract(contractAddress, abi, signer);
 
-          const contract = new Contract(contractAddress, abi, signer);
-          setContract(contract);
+          setProvider(provider);
+          setSigner(signer);
+          setContract(contractInstance);
           setIsConnected(true);
-        } else {
-          console.error("MetaMask is not installed!");
         }
       } catch (error) {
         console.error("Error initializing ethers:", error);
       }
     };
-
     initializeEthers();
   }, []);
+
+  const fetchAllFarmers = async () => {
+    if (contract) {
+      try {
+        const farmerList = await contract.getAllFarmers();
+        return farmerList;
+      } catch (error) {
+        console.error("Error fetching farmers:", error);
+        throw error;
+      }
+    }
+    return [];
+  };
 
   return {
     provider,
     signer,
     contract,
     isConnected,
+    fetchAllFarmers,
   };
 }
