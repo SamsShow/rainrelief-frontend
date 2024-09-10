@@ -125,7 +125,7 @@ export default function Landing() {
             Have questions or want to learn more about RainRelief? Get in touch with our development team.
           </motion.p>
           <motion.a
-            href="mailto:developer@rainrelief.com"
+            href="mailto:sakshamtyagi2008@gmail.com"
             className="inline-block bg-green-500 text-white px-6 py-3 rounded-full text-lg hover:bg-green-600 transition duration-300"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
