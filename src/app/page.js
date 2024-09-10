@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
+import logo from './assets/logoO.png';
 
 export default function Landing() {
   // Define animations
@@ -31,6 +33,7 @@ export default function Landing() {
           animate="visible"
           variants={container}
         >
+        <Image src={logo} alt="RainRelief Logo" className="w-52 mx-auto mb-8" />
           <motion.h1
             className="text-6xl font-bold mb-4"
             variants={fadeInUp}
