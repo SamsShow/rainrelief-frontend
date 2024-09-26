@@ -1,19 +1,32 @@
-"use client";
+"use client"
 
 import React, { useState, useEffect } from "react";
 import { useContract } from "../../hooks/useContract";
 import { motion } from "framer-motion";
-// import { ethers } from "ethers";
+
+const Card = ({ title, icon, onClick, color }) => (
+  <motion.div
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
+    className={`p-4 rounded-lg shadow-md cursor-pointer ${color} text-white`}
+    onClick={onClick}
+  >
+    <h3 className="text-xl font-semibold mb-2">{title}</h3>
+    <div className="text-4xl">{icon}</div>
+  </motion.div>
+);
 
 export default function Admin() {
   const { contract, isConnected } = useContract();
+  const [activeSection, setActiveSection] = useState(null);
+  const [message, setMessage] = useState("");
+  
   const [newFarmer, setNewFarmer] = useState("");
   const [farmerToRemove, setFarmerToRemove] = useState("");
   const [newThreshold, setNewThreshold] = useState(0);
   const [newMaxIncentive, setNewMaxIncentive] = useState(0);
   const [rainfall, setRainfall] = useState(0);
   const [fundAmount, setFundAmount] = useState(0);
-  const [message, setMessage] = useState("");
   const [farmers, setFarmers] = useState([]);
 
   useEffect(() => {
@@ -103,186 +116,172 @@ export default function Admin() {
     }
   };
 
+  const sections = [
+    { title: "Register Farmer", icon: "👨‍🌾", color: "bg-yellow-500", action: registerFarmer },
+    { title: "Remove Farmer", icon: "🚫", color: "bg-red-500", action: removeFarmer },
+    { title: "Update Threshold", icon: "🌡️", color: "bg-blue-500", action: updateThreshold },
+    { title: "Update Max Incentive", icon: "💰", color: "bg-green-500", action: updateMaxIncentive },
+    { title: "Distribute Incentives", icon: "🌧️", color: "bg-indigo-500", action: distributeIncentives },
+    { title: "Add Funds", icon: "💵", color: "bg-purple-500", action: addFunds },
+    { title: "Toggle Contract Pause", icon: "⏯️", color: "bg-gray-500", action: toggleContractPause },
+    { title: "View Farmers", icon: "👥", color: "bg-orange-500", action: () => setActiveSection("View Farmers") },
+  ];
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="min-h-screen bg-gradient-to-b from-green-800 to-green-600 flex items-center justify-center p-4"
-    >
-      <motion.div
-        initial={{ y: -50 }}
-        animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="w-full max-w-2xl bg-white rounded-lg shadow-xl overflow-hidden"
-      >
-        <div className="bg-green-600 p-6">
-          <h2 className="text-3xl font-bold text-white text-center">Admin Panel</h2>
-        </div>
-        <div className="p-6 space-y-6 text-black">
-          {message && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded"
-              role="alert"
-            >
-              <p>{message}</p>
-            </motion.div>
-          )}
-          
-          <div className="space-y-4 text-black">
-            <h3 className="text-xl font-semibold">Farmer Management</h3>
+    <div className="min-h-screen bg-gray-100 p-8">
+      <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">Admin Panel</h1>
+      
+      {message && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded mb-8"
+          role="alert"
+        >
+          <p>{message}</p>
+        </motion.div>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {sections.map((section, index) => (
+          <Card
+            key={index}
+            title={section.title}
+            icon={section.icon}
+            color={section.color}
+            onClick={() => setActiveSection(section.title)}
+          />
+        ))}
+      </div>
+
+      {activeSection && (
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-8 bg-white p-6 rounded-lg shadow-lg"
+        >
+          <h2 className="text-2xl font-semibold mb-4">{activeSection}</h2>
+          {activeSection === "Register Farmer" && (
             <div>
-              <label htmlFor="newFarmer" className="block text-sm font-medium text-gray-700">
-                New Farmer Address
-              </label>
               <input
-                id="newFarmer"
                 type="text"
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                className="w-full p-2 border rounded"
                 value={newFarmer}
                 onChange={(e) => setNewFarmer(e.target.value)}
+                placeholder="Enter farmer address"
               />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={registerFarmer}
-                className="mt-2 w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out"
+                className="mt-2 w-full bg-yellow-500 text-white p-2 rounded"
               >
                 Register Farmer
-              </motion.button>
+              </button>
             </div>
+          )}
+          {activeSection === "Remove Farmer" && (
             <div>
-              <label htmlFor="farmerToRemove" className="block text-sm font-medium text-gray-700">
-                Farmer Address to Remove
-              </label>
               <input
-                id="farmerToRemove"
                 type="text"
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                className="w-full p-2 border rounded"
                 value={farmerToRemove}
                 onChange={(e) => setFarmerToRemove(e.target.value)}
+                placeholder="Enter farmer address to remove"
               />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={removeFarmer}
-                className="mt-2 w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out"
+                className="mt-2 w-full bg-red-500 text-white p-2 rounded"
               >
                 Remove Farmer
-              </motion.button>
+              </button>
             </div>
-          </div>
-          
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold">Contract Management</h3>
+          )}
+          {activeSection === "Update Threshold" && (
             <div>
-              <label htmlFor="newThreshold" className="block text-sm font-medium text-gray-700">
-                New Rainfall Threshold
-              </label>
               <input
-                id="newThreshold"
                 type="number"
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                className="w-full p-2 border rounded"
                 value={newThreshold}
                 onChange={(e) => setNewThreshold(e.target.value)}
+                placeholder="Enter new rainfall threshold"
               />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={updateThreshold}
-                className="mt-2 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out"
+                className="mt-2 w-full bg-blue-500 text-white p-2 rounded"
               >
                 Update Threshold
-              </motion.button>
+              </button>
             </div>
+          )}
+          {activeSection === "Update Max Incentive" && (
             <div>
-              <label htmlFor="newMaxIncentive" className="block text-sm font-medium text-gray-700">
-                New Max Incentive (in ETH)
-              </label>
               <input
-                id="newMaxIncentive"
                 type="number"
-                step="0.01"
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                className="w-full p-2 border rounded"
                 value={newMaxIncentive}
                 onChange={(e) => setNewMaxIncentive(e.target.value)}
+                placeholder="Enter new max incentive (in ETH)"
               />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={updateMaxIncentive}
-                className="mt-2 w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out"
+                className="mt-2 w-full bg-green-500 text-white p-2 rounded"
               >
                 Update Max Incentive
-              </motion.button>
+              </button>
             </div>
+          )}
+          {activeSection === "Distribute Incentives" && (
             <div>
-              <label htmlFor="fundAmount" className="block text-sm font-medium text-gray-700">
-                Add Funds (in ETH)
-              </label>
               <input
-                id="fundAmount"
                 type="number"
-                step="0.01"
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-                value={fundAmount}
-                onChange={(e) => setFundAmount(e.target.value)}
-              />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={addFunds}
-                className="mt-2 w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out"
-              >
-                Add Funds
-              </motion.button>
-            </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={toggleContractPause}
-              className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out"
-            >
-              Toggle Contract Pause
-            </motion.button>
-          </div>
-          
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold">Incentive Distribution</h3>
-            <div>
-              <label htmlFor="rainfall" className="block text-sm font-medium text-gray-700">
-                Current Rainfall
-              </label>
-              <input
-                id="rainfall"
-                type="number"
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                className="w-full p-2 border rounded"
                 value={rainfall}
                 onChange={(e) => setRainfall(e.target.value)}
+                placeholder="Enter current rainfall"
               />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={distributeIncentives}
-                className="mt-2 w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out"
+                className="mt-2 w-full bg-indigo-500 text-white p-2 rounded"
               >
                 Distribute Incentives
-              </motion.button>
+              </button>
             </div>
-          </div>
-          
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold">Registered Farmers</h3>
-            <ul className="bg-gray-100 rounded-md p-4 max-h-40 overflow-y-auto">
+          )}
+          {activeSection === "Add Funds" && (
+            <div>
+              <input
+                type="number"
+                className="w-full p-2 border rounded"
+                value={fundAmount}
+                onChange={(e) => setFundAmount(e.target.value)}
+                placeholder="Enter amount to add (in ETH)"
+              />
+              <button
+                onClick={addFunds}
+                className="mt-2 w-full bg-purple-500 text-white p-2 rounded"
+              >
+                Add Funds
+              </button>
+            </div>
+          )}
+          {activeSection === "Toggle Contract Pause" && (
+            <div>
+              <button
+                onClick={toggleContractPause}
+                className="w-full bg-gray-500 text-white p-2 rounded"
+              >
+                Toggle Contract Pause
+              </button>
+            </div>
+          )}
+          {activeSection === "View Farmers" && (
+            <ul className="bg-gray-100 rounded-md p-4 max-h-60 overflow-y-auto">
               {farmers.map((farmer, index) => (
                 <li key={index} className="text-sm text-gray-700">{farmer}</li>
               ))}
             </ul>
-          </div>
-        </div>
-      </motion.div>
-    </motion.div>
+          )}
+        </motion.div>
+      )}
+    </div>
   );
 }

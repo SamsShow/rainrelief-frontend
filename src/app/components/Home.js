@@ -3,8 +3,32 @@
 import React, { useState, useEffect } from "react";
 import { useContract } from "../../hooks/useContract";
 import Link from 'next/link';
+import { ArrowLeft, DollarSign, UserCheck, BarChart2, PauseCircle } from 'lucide-react';
 
-export default function Home() {
+const CategoryButton = ({ children, isActive, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`px-4 py-2 rounded-full text-sm ${
+      isActive ? 'bg-gray-200 text-gray-800' : 'text-gray-600'
+    } hover:bg-gray-100 transition-colors`}
+  >
+    {children}
+  </button>
+);
+
+const ActionCard = ({ title, icon, onClick, color }) => (
+  <button
+    onClick={onClick}
+    className={`w-full p-6 rounded-2xl text-left transition-transform hover:scale-105 ${color}`}
+  >
+    <div className="flex items-center justify-between">
+      <h3 className="text-xl font-semibold text-white">{title}</h3>
+      {icon}
+    </div>
+  </button>
+);
+
+export default function FarmerDashboard() {
   const { contract, isConnected, connectWallet } = useContract();
   const [farmerAddress, setFarmerAddress] = useState("");
   const [message, setMessage] = useState("");
@@ -12,6 +36,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
   const [incentiveBalance, setIncentiveBalance] = useState(0);
+  const [activeCategory, setActiveCategory] = useState("actions");
 
   useEffect(() => {
     if (contract && farmerAddress) {
@@ -85,104 +110,96 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-900 to-blue-700 flex items-center justify-center p-4 text-black">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-xl overflow-hidden">
-        <div className="bg-blue-600 p-6">
-          <h2 className="text-3xl font-bold text-white text-center">Farmer Dashboard</h2>
-        </div>
-        <div className="p-6 space-y-6">
-          {message && (
-            <div className={`border-l-4 p-4 rounded ${
-              message.includes("successfully") 
-                ? "bg-green-100 border-green-500 text-green-700"
-                : "bg-red-100 border-red-500 text-red-700"
-            }`} role="alert">
-              <p>{message}</p>
-            </div>
-          )}
-          {!isConnected && (
-            <button
-              onClick={connectWallet}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:-translate-y-1"
-            >
-              Connect Wallet
-            </button>
-          )}
-          {isConnected && (
-            <>
-              <div className="space-y-2">
-                <label htmlFor="farmerAddress" className="block text-sm font-medium text-gray-700">
-                  Farmer Address
-                </label>
-                <input
-                  id="farmerAddress"
-                  type="text"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter your farmer address"
-                  value={farmerAddress}
-                  onChange={(e) => setFarmerAddress(e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col space-y-4">
-                <Link href="https://forms.gle/2G2CXULW4VC6EhjC8"
-                  target="_blank"
-                  className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:-translate-y-1 text-center"
-                >
-                  Register as Farmer
-                </Link>
+    <div className="min-h-screen bg-gray-100 rounded-lg p-9">
+      <div className="max-w-2xl mx-auto pt-5">
+        <header className="flex items-center mb-6">
+          <h1 className="text-2xl font-bold text-black ">Farmer Dashboard</h1>
+        </header>
 
-                <button
-                  onClick={withdrawIncentive}
-                  disabled={isPaused || isLoading}
-                  className={`w-full font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:-translate-y-1 ${
-                    isPaused
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : isLoading
-                      ? "bg-blue-300 cursor-wait"
-                      : "bg-blue-500 hover:bg-blue-600 text-white"
-                  }`}
-                >
-                  {isLoading ? "Processing..." : isPaused ? "Withdrawals Paused" : "Withdraw Incentive"}
-                </button>
+        {/* <div className="flex space-x-2 mb-6 overflow-x-auto">
+          <CategoryButton 
+            isActive={activeCategory === "actions"} 
+            onClick={() => setActiveCategory("actions")}
+          >
+            Actions
+          </CategoryButton>
+          <CategoryButton 
+            isActive={activeCategory === "status"} 
+            onClick={() => setActiveCategory("status")}
+          >
+            Status
+          </CategoryButton>
+          <CategoryButton 
+            isActive={activeCategory === "balance"} 
+            onClick={() => setActiveCategory("balance")}
+          >
+            Balance
+          </CategoryButton>
+        </div> */}
 
-                <button
-                  onClick={checkRegistrationStatus}
-                  disabled={!contract || !farmerAddress}
-                  className={`w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:-translate-y-1 ${
-                    !contract || !farmerAddress ? "cursor-not-allowed opacity-50" : ""
-                  }`}
-                >
-                  Check Registration Status
-                </button>
+        {message && (
+          <div className={`p-4 rounded-lg mb-6 ${
+            message.includes("successfully") 
+              ? "bg-green-100 text-green-700"
+              : "bg-red-100 text-red-700"
+          }`}>
+            <p>{message}</p>
+          </div>
+        )}
 
-                <button
-                  onClick={fetchIncentiveBalance}
-                  disabled={!contract || !farmerAddress}
-                  className={`w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:-translate-y-1 ${
-                    !contract || !farmerAddress ? "cursor-not-allowed opacity-50" : ""
-                  }`}
-                >
-                  Fetch Incentive Balance
-                </button>
+        {!isConnected ? (
+          <ActionCard
+            title="Connect Wallet"
+            icon={<DollarSign className="w-6 h-6 text-white" />}
+            onClick={connectWallet}
+            color="bg-blue-500"
+          />
+        ) : (
+          <div className="space-y-4">
+            <input
+              type="text"
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 text-black"
+              placeholder="Enter your farmer address"
+              value={farmerAddress}
+              onChange={(e) => setFarmerAddress(e.target.value)}
+            />
+            
+            <ActionCard
+              title="Register as Farmer"
+              icon={<UserCheck className="w-6 h-6 text-white" />}
+              onClick={() => window.open("https://forms.gle/2G2CXULW4VC6EhjC8", "_blank")}
+              color="bg-green-500"
+            />
 
-                <button
-                  onClick={checkContractPauseStatus}
-                  disabled={!contract}
-                  className={`w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:-translate-y-1 ${
-                    !contract ? "cursor-not-allowed opacity-50" : ""
-                  }`}
-                >
-                  Check Contract Pause Status
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-        <div className="bg-gray-100 px-6 py-4">
-          <p className="text-sm text-gray-600 text-center">
-            Welcome to RainRelief. {isPaused ? "Note: Contract is currently paused." : "Register or withdraw your incentives here."}
-          </p>
-        </div>
+            <ActionCard
+              title="Withdraw Incentive"
+              icon={<DollarSign className="w-6 h-6 text-white" />}
+              onClick={withdrawIncentive}
+              color={isPaused ? "bg-gray-400" : "bg-blue-500"}
+            />
+
+            <ActionCard
+              title="Check Registration"
+              icon={<UserCheck className="w-6 h-6 text-white" />}
+              onClick={checkRegistrationStatus}
+              color="bg-yellow-500"
+            />
+
+            <ActionCard
+              title="Fetch Balance"
+              icon={<BarChart2 className="w-6 h-6 text-white" />}
+              onClick={fetchIncentiveBalance}
+              color="bg-purple-500"
+            />
+
+            <ActionCard
+              title="Check Contract Status"
+              icon={<PauseCircle className="w-6 h-6 text-white" />}
+              onClick={checkContractPauseStatus}
+              color="bg-red-500"
+            />
+          </div>
+        )}
       </div>
     </div>
   );
